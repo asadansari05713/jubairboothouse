@@ -17,6 +17,15 @@ services:
       - key: PORT
         value: 8000
       - key: DATABASE_URL
-        value: sqlite:///./jubair_boot_house.db
+        fromDatabase:
+          name: jubair-boot-house-db
+          property: connectionString
     healthCheckPath: /health
     autoDeploy: true
+
+  - type: pserv
+    name: jubair-boot-house-db
+    env: postgres
+    plan: free
+    ipAllowList: []
+    maxConnections: 5
