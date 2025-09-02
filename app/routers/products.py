@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Form, Query, sta
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session as DBSession
 from app.database import get_db
 from app.models import Product
 from app.routers.auth import get_current_admin, get_current_session
@@ -44,57 +44,77 @@ async def catalog_page(
     search: Optional[str] = Query(None),
     category: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: DBSession = Depends(get_db)
 ):
     """Product catalog page with search and filters"""
-    query = db.query(Product)
-    
-    # Apply filters
-    if search:
-        query = query.filter(Product.name.ilike(f"%{search}%"))
-    if category:
-        query = query.filter(Product.category == category)
-    if status:
-        query = query.filter(Product.status == status)
-    
-    products = query.all()
-    
-    return templates.TemplateResponse("catalog.html", {
-        "request": request,
-        "products": products,
-        "categories": CATEGORIES,
-        "sizes": SIZES,
-        "statuses": STATUSES,
-        "search": search,
-        "selected_category": category,
-        "selected_status": status
-    })
+    try:
+        query = db.query(Product)
+        
+        # Apply filters
+        if search:
+            query = query.filter(Product.name.ilike(f"%{search}%"))
+        if category:
+            query = query.filter(Product.category == category)
+        if status:
+            query = query.filter(Product.status == status)
+        
+        products = query.all()
+        
+        return templates.TemplateResponse("catalog.html", {
+            "request": request,
+            "products": products,
+            "categories": CATEGORIES,
+            "sizes": SIZES,
+            "statuses": STATUSES,
+            "search": search,
+            "selected_category": category,
+            "selected_status": status
+        })
+    except Exception as e:
+        print(f"Error in catalog page: {e}")
+        # Return empty catalog if database error occurs
+        return templates.TemplateResponse("catalog.html", {
+            "request": request,
+            "products": [],
+            "categories": CATEGORIES,
+            "sizes": SIZES,
+            "statuses": STATUSES,
+            "search": search,
+            "selected_category": category,
+            "selected_status": status
+        })
 
 @router.get("/detail/{product_id}", response_class=HTMLResponse)
 async def product_detail(
     request: Request,
     product_id: int,
-    db: Session = Depends(get_db)
+    db: DBSession = Depends(get_db)
 ):
     """Product detail page with image gallery and smooth animations"""
-    product = db.query(Product).filter(Product.id == product_id).first()
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
-    
-    # Get related products (same category, excluding current product)
-    related_products = db.query(Product).filter(
-        Product.category == product.category,
-        Product.id != product.id
-    ).limit(4).all()
-    
-    return templates.TemplateResponse("product_detail.html", {
-        "request": request,
-        "product": product,
-        "related_products": related_products
-    })
+    try:
+        product = db.query(Product).filter(Product.id == product_id).first()
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        
+        # Get related products (same category, excluding current product)
+        related_products = db.query(Product).filter(
+            Product.category == product.category,
+            Product.id != product.id
+        ).limit(4).all()
+        
+        return templates.TemplateResponse("product_detail.html", {
+            "request": request,
+            "product": product,
+            "related_products": related_products
+        })
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in product detail: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/admin/dashboard", response_class=HTMLResponse)
-async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
+async def admin_dashboard(request: Request, db: DBSession = Depends(get_db)):
     """Admin dashboard with product management"""
     # Check if user is logged in
     admin = get_current_admin(request, db)
@@ -121,7 +141,7 @@ async def add_product(
     sizes: str = Form(""),
     image_url: str = Form(""),
     uploaded_images: List[UploadFile] = File([]),
-    db: Session = Depends(get_db)
+    db: DBSession = Depends(get_db)
 ):
     """Add new product with multiple image uploads"""
     admin = get_current_admin(request, db)
@@ -192,7 +212,7 @@ async def edit_product(
     sizes: str = Form(""),
     image_url: str = Form(""),
     uploaded_images: List[UploadFile] = File([]),
-    db: Session = Depends(get_db)
+    db: DBSession = Depends(get_db)
 ):
     """Edit product with multiple image uploads"""
     admin = get_current_admin(request, db)
@@ -258,7 +278,7 @@ async def edit_product(
 async def delete_product(
     request: Request,
     product_id: int,
-    db: Session = Depends(get_db)
+    db: DBSession = Depends(get_db)
 ):
     """Delete product"""
     admin = get_current_admin(request, db)
@@ -290,7 +310,7 @@ async def delete_product(
 async def toggle_product_status(
     request: Request,
     product_id: int,
-    db: Session = Depends(get_db)
+    db: DBSession = Depends(get_db)
 ):
     """Toggle product status between Available and Out of Stock"""
     admin = get_current_admin(request, db)
