@@ -1,0 +1,33 @@
+# Production requirements for Jubair Boot House
+# Install with: pip install -r requirements-prod.txt
+
+# Core web framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Database
+sqlalchemy==2.0.23
+pymysql==1.1.2
+
+# Security and authentication
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Template engine
+jinja2==3.1.2
+
+# File handling
+aiofiles==23.2.1
+Pillow>=9.0.0
+
+# Production server (alternative to uvicorn)
+gunicorn==21.2.0
+
+# Environment management
+python-dotenv==1.0.0
+
+# CORS handling
+fastapi-cors==0.0.6
+
+# Rate limiting
+slowapi==0.1.9

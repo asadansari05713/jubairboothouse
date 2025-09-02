@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  jubair-boot-house:
+    build: .
+    container_name: jubair-boot-house
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - HOST=0.0.0.0
+      - PORT=8000
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./jubair_boot_house.db}
+      - LOG_LEVEL=INFO
+      - GUNICORN_WORKERS=2
+      - MAX_FILE_SIZE=5242880
+      - RATE_LIMIT_PER_MINUTE=60
+    volumes:
+      - ./logs:/app/logs
+      - ./static/uploads:/app/static/uploads
+      - ./jubair_boot_house.db:/app/jubair_boot_house.db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - jubair-network
+
+  # Optional: Add a reverse proxy (Nginx)
+  nginx:
+    image: nginx:alpine
+    container_name: jubair-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - jubair-boot-house
+    networks:
+      - jubair-network
+
+networks:
+  jubair-network:
+    driver: bridge
+
+volumes:
+  logs:
+  uploads:
