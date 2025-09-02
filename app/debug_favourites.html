@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Favourites</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">Debug Test</a>
+            
+            <div class="navbar-nav ms-auto">
+                <div class="dropdown">
+                    <a class="nav-link user-profile-btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user me-2"></i>Test User
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/auth/user/profile">
+                            <i class="fas fa-user-circle me-2"></i>My Profile
+                        </a></li>
+                        <li><a class="dropdown-item" href="/auth/user/favourites" id="favouritesLink">
+                            <i class="fas fa-heart me-2"></i>My Favourites
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/auth/user/logout">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1>Debug Favourites</h1>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Test Links</h5>
+                    </div>
+                    <div class="card-body">
+                        <a href="/auth/user/favourites" class="btn btn-primary me-2">Direct Link to Favourites</a>
+                        <a href="/auth/user/profile" class="btn btn-secondary me-2">Direct Link to Profile</a>
+                        <button class="btn btn-success" onclick="testFavouritesAPI()">Test Favourites API</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Console Output</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="consoleOutput" style="height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; font-family: monospace; font-size: 12px;">
+                            <div>Console output will appear here...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Session Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="sessionInfo">
+                            Loading session info...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Override console.log to capture output
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        function addToConsole(message, type = 'log') {
+            const output = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> <span style="color: ${type === 'error' ? 'red' : 'blue'};">${message}</span>`;
+            output.appendChild(logEntry);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole(args.join(' '), 'error');
+        };
+        
+        // Test favourites API
+        async function testFavouritesAPI() {
+            console.log('Testing favourites API...');
+            try {
+                const response = await fetch('/auth/user/favourites', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                
+                if (response.redirected) {
+                    console.log('Response was redirected to:', response.url);
+                }
+                
+                const text = await response.text();
+                console.log('Response text length:', text.length);
+                console.log('Response preview:', text.substring(0, 200) + '...');
+                
+            } catch (error) {
+                console.error('Error testing favourites API:', error);
+            }
+        }
+        
+        // Check session status
+        async function checkSessionStatus() {
+            console.log('Checking session status...');
+            try {
+                const response = await fetch('/auth/session/status', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                console.log('Session status:', data);
+                
+                const sessionInfo = document.getElementById('sessionInfo');
+                sessionInfo.innerHTML = `
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                console.error('Error checking session status:', error);
+            }
+        }
+        
+        // Add click event listener to favourites link
+        document.getElementById('favouritesLink').addEventListener('click', function(e) {
+            console.log('Favourites link clicked!');
+            console.log('Link href:', this.href);
+            console.log('Current location:', window.location.href);
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Debug page loaded');
+            checkSessionStatus();
+        });
+    </script>
+</body>
+</html>
