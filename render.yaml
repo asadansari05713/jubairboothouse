@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: jubair-boot-house
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements-prod.txt
+    startCommand: gunicorn -c gunicorn.conf.py app.main:app
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 8000
+      - key: DATABASE_URL
+        value: sqlite:///./jubair_boot_house.db
+    healthCheckPath: /health
+    autoDeploy: true

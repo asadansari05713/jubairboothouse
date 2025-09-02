@@ -64,6 +64,7 @@ test_*.html
 # Documentation
 README.md
 DEPLOYMENT.md
+README-DEPLOYMENT.md
 *.md
 
 # Deployment scripts
@@ -86,3 +87,6 @@ ssl/
 .env
 .env.local
 .env.development
+
+# Keep app directory - it's essential!
+# app/

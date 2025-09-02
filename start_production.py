@@ -47,7 +47,7 @@ def main():
         
         # Import and start the application
         import uvicorn
-        from main import app
+        from app.main import app
         
         # Production settings
         host = os.getenv("HOST", "0.0.0.0")
@@ -60,7 +60,7 @@ def main():
         
         # Start the server
         uvicorn.run(
-            "main:app",
+            "app.main:app",
             host=host,
             port=port,
             workers=workers,

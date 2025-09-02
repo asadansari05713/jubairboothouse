@@ -1,5 +1,5 @@
 # Gunicorn configuration file for Jubair Boot House
-# Run with: gunicorn -c gunicorn.conf.py main:app
+# Run with: gunicorn -c gunicorn.conf.py app.main:app
 
 import multiprocessing
 import os
@@ -43,3 +43,6 @@ secure_scheme_headers = {
     'X-FORWARDED-PROTO': 'https',
     'X-FORWARDED-SSL': 'on'
 }
+
+# Python path
+pythonpath = "/app"
