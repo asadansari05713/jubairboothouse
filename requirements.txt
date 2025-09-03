@@ -7,3 +7,4 @@ passlib[bcrypt]==1.7.4
 python-session==0.1.0
 aiofiles==23.2.1
 Pillow==10.1.0
+psycopg2-binary==2.9.7
