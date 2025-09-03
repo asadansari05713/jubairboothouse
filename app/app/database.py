@@ -1,16 +1,14 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
 # SQLite Database configuration - Local file-based, zero connection hassle
-DATABASE_URL = "sqlite:///./jubair_boot_house.db"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Create SQLAlchemy engine with SQLite-specific settings
-engine = create_engine(
-    DATABASE_URL, 
-    echo=True, 
-    connect_args={"check_same_thread": False}  # Required for SQLite with FastAPI
+engine = create_engine(DATABASE_URL) # Required for SQLite with FastAPI
 )
 
 # Create SessionLocal class
