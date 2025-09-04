@@ -3,8 +3,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# Database configuration is now environment-driven. Set DATABASE_URL to your target DB.
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://jubair_user:jubair123@localhost:5432/jubair_boot_house")
+# Database configuration is environment-driven. Set DATABASE_URL to your target DB.
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = None
 SessionLocal = None
@@ -25,7 +25,7 @@ Base = declarative_base()
 # Dependency to get database session
 def get_db():
     if SessionLocal is None:
-        raise RuntimeError(f"Database not configured. DATABASE_URL: {DATABASE_URL}")
+        raise RuntimeError("Database not configured. Set DATABASE_URL in environment.")
     db = SessionLocal()
     try:
         yield db
