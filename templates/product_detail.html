@@ -82,7 +82,20 @@
         <!-- Product Information Section -->
         <div class="col-lg-6">
             <div class="product-info">
-                <h1 class="product-title mb-3">{{ product.name }}</h1>
+                {% set card_gender = '' %}
+                {% if product.description %}
+                    {% if 'Gender: Male' in product.description %}
+                        {% set card_gender = 'Male' %}
+                    {% elif 'Gender: Female' in product.description %}
+                        {% set card_gender = 'Female' %}
+                    {% endif %}
+                {% endif %}
+                <h1 class="product-title mb-3 d-flex align-items-center justify-content-between">
+                    <span>{{ product.name }}</span>
+                    {% if card_gender %}
+                    <span class="badge {% if card_gender == 'Male' %}bg-info{% else %}bg-danger{% endif %} fs-6 text-white"><i class="fas fa-{% if card_gender == 'Male' %}mars{% else %}venus{% endif %} me-1"></i>{{ card_gender }}</span>
+                    {% endif %}
+                </h1>
                 
                 <div class="product-price mb-4">
                     <span class="price-amount">₹{{ "%.2f"|format(product.price) }}</span>
@@ -101,10 +114,12 @@
                     {% endif %}
                 </div>
 
+                {% set raw_desc = product.description or '' %}
+                {% set clean_desc = raw_desc.replace('Gender: Male','').replace('Gender: Female','').strip() %}
                 <div class="product-description mb-4">
                     <h5>Description</h5>
-                    <p class="text-muted">{{ product.description }}</p>
-            </div>
+                    <p class="text-muted">{{ clean_desc }}</p>
+                </div>
             
                 <div class="product-meta mb-4">
                     <div class="row">
@@ -182,8 +197,8 @@
         <h3 class="section-title mb-4">You might also like</h3>
         <div class="row g-4">
             {% for related_product in related_products[:4] %}
-                <div class="col-md-6 col-lg-3">
-                    <div class="related-product-card" onclick="window.location.href='/products/detail/{{ related_product.id }}'">
+                <div class="col-6 col-md-3 col-lg-3 col-xl-3">
+                    <div class="related-product-card" onclick="window.location.href='/products/{{ related_product.id }}'">
                         <div class="related-product-image">
                             {% if related_product.image_url %}
                                 <img src="{{ related_product.image_url }}" alt="{{ related_product.name }}">
@@ -299,6 +314,14 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+
+/* Ensure badge text is visible and not affected by gradient text of title */
+.product-title .badge {
+    -webkit-text-fill-color: #fff;
+    color: #fff;
+    -webkit-background-clip: initial;
+    background-clip: border-box;
 }
 
 .product-price {
@@ -520,6 +543,29 @@
     
     .related-product-card {
         margin-bottom: 20px;
+    }
+    
+    /* Mobile adjustments for related products 2-per-row layout */
+    .related-product-image {
+        height: 150px; /* Match catalog mobile height */
+    }
+    
+    .related-product-details {
+        padding: 0.75rem; /* Match catalog mobile padding */
+    }
+    
+    .related-product-title {
+        font-size: 1rem; /* Match catalog mobile title size */
+        margin-bottom: 0.5rem;
+    }
+    
+    .related-product-price {
+        font-size: 1.1rem; /* Match catalog mobile price size */
+    }
+    
+    .related-product-card .btn {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
     }
 }
 

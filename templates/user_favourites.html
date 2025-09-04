@@ -34,7 +34,7 @@
             {% if favourites %}
                 <div class="row g-4">
                     {% for product in favourites %}
-                    <div class="col-md-6 col-lg-4">
+                    <div class="col-6 col-md-3 col-lg-3 col-xl-3">
                         <div class="favourite-product-card">
                             <div class="product-image-container">
                                 {% if product.image_url %}
@@ -67,7 +67,7 @@
                                 </p>
                                 <p class="product-price">₹{{ "%.2f"|format(product.price) }}</p>
                                 <div class="product-actions">
-                                    <a href="/products/detail/{{ product.id }}" class="btn btn-primary btn-sm me-2">
+                                    <a href="/products/{{ product.id }}" class="btn btn-primary btn-sm me-2">
                                         <i class="fas fa-eye me-1"></i>View Details
                                     </a>
                                     <button class="btn btn-outline-danger btn-sm" onclick="removeFromFavourites({{ product.id }}, this)">
@@ -206,6 +206,104 @@
     background-color: #e7f3ff;
     border-color: #b3d9ff;
     color: #0c5460;
+}
+
+/* Mobile responsive adjustments for 4-per-row layout */
+@media (max-width: 768px) {
+    .favourite-product-card {
+        margin-bottom: 0.5rem;
+    }
+    
+    .product-image-container {
+        height: 120px; /* Smaller image height on mobile */
+    }
+    
+    .product-details {
+        padding: 0.5rem; /* Reduced padding */
+    }
+    
+    .product-title {
+        font-size: 0.9rem; /* Smaller title */
+        margin-bottom: 0.25rem;
+    }
+    
+    .product-description {
+        font-size: 0.75rem; /* Smaller description */
+        margin-bottom: 0.5rem;
+    }
+    
+    .product-price {
+        font-size: 1rem; /* Smaller price */
+    }
+    
+    .product-actions .btn {
+        font-size: 0.7rem; /* Smaller button text */
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .product-meta .badge {
+        font-size: 0.6rem; /* Smaller badges */
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .product-meta small {
+        font-size: 0.6rem; /* Smaller meta text */
+    }
+    
+    .product-meta .fw-bold {
+        font-size: 0.7rem; /* Smaller category text */
+    }
+}
+
+@media (max-width: 576px) {
+    /* Extra small mobile adjustments */
+    .product-image-container {
+        height: 100px; /* Even smaller on very small screens */
+    }
+    
+    .product-details {
+        padding: 0.4rem;
+    }
+    
+    .product-title {
+        font-size: 0.8rem;
+    }
+    
+    .product-description {
+        font-size: 0.7rem;
+    }
+    
+    .product-price {
+        font-size: 0.9rem;
+    }
+    
+    .product-actions .btn {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+    
+    /* Adjust image height for 2-per-row layout */
+    .product-image-container {
+        height: 150px; /* Match catalog mobile height */
+    }
+    
+    .product-details {
+        padding: 0.75rem; /* Match catalog mobile padding */
+    }
+    
+    .product-title {
+        font-size: 1rem; /* Match catalog mobile title size */
+        margin-bottom: 0.5rem;
+    }
+    
+    .product-description {
+        font-size: 0.8rem; /* Match catalog mobile description size */
+        margin-bottom: 0.75rem;
+    }
+    
+    .product-price {
+        font-size: 1.1rem; /* Match catalog mobile price size */
+    }
 }
 </style>
 {% endblock %}

@@ -2,16 +2,17 @@ from fastapi import FastAPI, Request, Depends, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
-from app.database import get_db, test_connection, init_db
+from app.database import engine, Base, get_db
 from app.routers import auth, products
 import uvicorn
 from starlette.responses import RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 from sqlalchemy.orm import Session
-import os
 
-# Create FastAPI app
+# Database tables are managed by init_schema.py
+# Base.metadata.create_all(bind=engine)
+
 app = FastAPI(
     title="Jubair Boot House",
     description="Professional footwear store with admin management",
@@ -30,71 +31,6 @@ templates = Jinja2Templates(directory="templates")
 
 # Note: Session management is now handled client-side via JavaScript
 # The middleware has been removed to improve performance
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database and other services on startup"""
-    print("🚀 Starting Jubair Boot House...")
-    
-    # Check if we're using PostgreSQL
-    if os.getenv("DATABASE_URL"):
-        print("🌐 Production mode: Using PostgreSQL database")
-        
-        # Test database connection
-        if test_connection():
-            print("✅ PostgreSQL connection established")
-            
-            # Ensure tables exist
-            if init_db():
-                print("✅ PostgreSQL tables verified/created")
-            else:
-                print("⚠️  PostgreSQL table initialization had issues")
-        else:
-            print("❌ PostgreSQL connection failed - app will continue with limited functionality")
-    else:
-        print("💻 Development mode: Using SQLite database")
-        
-        # Test database connection
-        if test_connection():
-            print("✅ SQLite connection established")
-            
-            # Ensure tables exist
-            if init_db():
-                print("✅ SQLite tables verified/created")
-            else:
-                print("⚠️  SQLite table initialization had issues")
-        else:
-            print("❌ SQLite connection failed - app will continue with limited functionality")
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint for monitoring"""
-    try:
-        # Test database connection
-        db_status = "connected" if test_connection() else "disconnected"
-        
-        # Get database type
-        if os.getenv("DATABASE_URL"):
-            db_type = "PostgreSQL"
-        else:
-            db_type = "SQLite"
-        
-        return {
-            "status": "healthy" if db_status == "connected" else "warning",
-            "database": {
-                "type": db_type,
-                "status": db_status
-            },
-            "environment": os.getenv("ENVIRONMENT", "development"),
-            "app": "Jubair Boot House",
-            "version": "1.0.0"
-        }
-    except Exception as e:
-        return {
-            "status": "error", 
-            "message": str(e), 
-            "environment": os.getenv("ENVIRONMENT", "development")
-        }
 
 @app.get("/", response_class=HTMLResponse)
 async def home_page(request: Request):

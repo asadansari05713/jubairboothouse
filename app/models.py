@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from app.database import Base
 import json
@@ -19,11 +19,11 @@ class User(Base):
     email = Column(String(100), unique=True, nullable=False)
     password = Column(String(255), nullable=False)  # This will store the hashed password
     whatsapp = Column(String(20), nullable=True)
-    created_at = Column(DateTime, default=datetime.now, nullable=True)  # Changed to DateTime for PostgreSQL
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=True)  # Changed to DateTime for PostgreSQL
+    created_at = Column(String(50), nullable=True)  # Required by existing database
+    updated_at = Column(String(50), nullable=True)  # Required by existing database
     
     # Relationships
-    favourites = relationship("UserFavourite", back_populates="user", cascade="all, delete-orphan")
+    favourites = relationship("UserFavourite", back_populates="user")
 
 class Product(Base):
     __tablename__ = "products"
@@ -34,12 +34,12 @@ class Product(Base):
     price = Column(Float, nullable=False)
     category = Column(String(50), nullable=False)
     status = Column(String(20), default="Available", nullable=False)  # Available or Out of Stock
-    image_url = Column(String(500), nullable=True)  # Increased length for PostgreSQL
+    image_url = Column(String(255), nullable=True)
     images = Column(Text, nullable=True)  # JSON array of uploaded image paths
     sizes = Column(Text, nullable=True)  # JSON array of available sizes
     
     # Relationships
-    favourited_by = relationship("UserFavourite", back_populates="product", cascade="all, delete-orphan")
+    favourited_by = relationship("UserFavourite", back_populates="product")
     
     def get_images_list(self):
         """Get uploaded images as a list, excluding the main image_url to avoid duplication"""
@@ -78,10 +78,10 @@ class UserFavourite(Base):
     __tablename__ = "user_favourites"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
     user_email = Column(String(100), nullable=True)  # Keep for backward compatibility
-    created_at = Column(DateTime, default=datetime.now, nullable=True)  # Changed to DateTime for PostgreSQL
+    created_at = Column(String(50), nullable=True)  # Keep for backward compatibility
     
     # Relationships
     user = relationship("User", back_populates="favourites")
@@ -97,7 +97,7 @@ class Session(Base):
     user_id = Column(Integer, nullable=True)  # For user sessions
     created_at = Column(DateTime, default=datetime.now, nullable=False)
     expires_at = Column(DateTime, nullable=False)
-    is_active = Column(Boolean, default=True, nullable=False)  # Changed to Boolean for PostgreSQL
+    is_active = Column(Integer, default=1, nullable=False)  # 1 for active, 0 for inactive
 
 class Feedback(Base):
     __tablename__ = "feedback"

@@ -1,1 +1,1 @@
-web: gunicorn -c gunicorn.conf.py app.main:app
+web: uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}

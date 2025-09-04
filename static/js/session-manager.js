@@ -144,6 +144,8 @@ class SessionManager {
             this.updateAdminNavVisibility();
             // Update footer visibility based on user type
             this.updateFooterVisibility();
+            // Update admin welcome box visibility
+            this.updateAdminWelcomeBoxVisibility();
         } else {
             console.log('User is not logged in, showing login buttons...');
             // User is not logged in - show login buttons
@@ -153,6 +155,8 @@ class SessionManager {
             this.hideAdminNav();
             // Show footer for non-logged in users
             this.showFooter();
+            // Hide admin welcome box for non-logged in users
+            this.updateAdminWelcomeBoxVisibility();
         }
     }
 
@@ -336,6 +340,23 @@ class SessionManager {
             }
         } else {
             console.log('Footer element not found');
+        }
+    }
+
+    updateAdminWelcomeBoxVisibility() {
+        const adminWelcomeBox = document.getElementById('adminWelcomeBox');
+        if (adminWelcomeBox) {
+            if (this.sessionData && this.sessionData.user_type === 'admin') {
+                // Show admin welcome box for admin users
+                adminWelcomeBox.style.display = 'block';
+                console.log('Admin welcome box shown for admin user:', this.sessionData);
+            } else {
+                // Hide admin welcome box for regular users
+                adminWelcomeBox.style.display = 'none';
+                console.log('Admin welcome box hidden for regular user:', this.sessionData);
+            }
+        } else {
+            console.log('Admin welcome box element not found');
         }
     }
 

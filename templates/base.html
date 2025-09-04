@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>{% block title %}Jubair Boot House{% endblock %}</title>
+    <title>{% block title %}Jubair Boot House - Premium Footwear Store{% endblock %}</title>
     
     <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +17,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/mobile-navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/admin-animations.css') }}">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -32,7 +33,7 @@
                 </div>
                 <div class="brand-text">
                     <span class="brand-name">Jubair Boot House</span>
-                    <span class="brand-tagline"> A Premium Footwear Store</span>
+                    <span class="brand-tagline"> Elite Footwear Collection</span>
                 </div>
             </div>
             
@@ -45,7 +46,7 @@
                     <i class="fas fa-shopping-bag me-2"></i>Catalog
                 </a>
                 <a class="nav-link" href="/products/admin/dashboard" id="adminNavItem" style="display: none;">
-                    <i class="fas fa-user-shield me-2"></i>Admin
+                    <i class="fas fa-user-shield me-2"></i>Admin Panel
                 </a>
             </div>
             
@@ -86,6 +87,8 @@
         </div>
     </nav>
 
+    
+
     <!-- Mobile Search and Navigation Bar -->
     <div class="mobile-navbar d-lg-none">
         <div class="container">
@@ -98,7 +101,7 @@
                     <i class="fas fa-shopping-bag me-2"></i>Catalog
                 </a>
                 <a class="mobile-nav-link" href="/products/admin/dashboard" id="mobileAdminNavItem" style="display: none;">
-                    <i class="fas fa-user-shield me-2"></i>Admin
+                    <i class="fas fa-user-shield me-2"></i>Admin Panel
                 </a>
             </div>
             
@@ -191,10 +194,9 @@
                 <div class="col-lg-4 col-md-6">
                     <div class="footer-section">
                         <h5 class="mb-3">
-                            <i class="fas fa-shoe-prints me-2 text-warning"></i>
                             Jubair Boot House
                         </h5>
-                        <p class="mb-3">Since 2007, we have been offering customers the latest collections of branded footwear — from casual sneakers to stylish boots — all under one roof.</p>
+                        <p class="mb-3">Since 2007, we have been offering customers the latest collections of elite footwear — from casual sneakers to stylish boots — all under one roof.</p>
                         <div class="social-links">
                             <a href="https://www.facebook.com/share/1KnkNBNbBz/" class="social-link" aria-label="Facebook">
                                 <i class="fab fa-facebook-f"></i>
@@ -265,7 +267,7 @@
             
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <p class="mb-0">&copy; 2025 Jubair Boot House. All rights reserved.</p>
+                    <p class="mb-0">&copy; 2025 Jubair Boot House - Elite Footwear Collection. All rights reserved.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <div class="footer-bottom-links">
@@ -309,6 +311,28 @@
         } catch (error) {
             console.log('Error checking immediate session:', error);
         }
+    })();
+    </script>
+    <script>
+    // Hide catalog favourites button for admin users only
+    (function() {
+        try {
+            const storedSession = localStorage.getItem('jubair_session');
+            if (!storedSession) return;
+            const sessionData = JSON.parse(storedSession);
+            if (!(sessionData && sessionData.logged_in && sessionData.user_type === 'admin')) return;
+            // Admin: hide favourites button in catalog
+            const hideFavs = () => {
+                document.querySelectorAll('.catalog-fav-btn').forEach(btn => {
+                    btn.style.display = 'none';
+                });
+            };
+            // Initial pass
+            hideFavs();
+            // Observe DOM changes on catalog pages
+            const observer = new MutationObserver(hideFavs);
+            observer.observe(document.body, { childList: true, subtree: true });
+        } catch (e) { console.log('Admin fav hide error:', e); }
     })();
     </script>
     

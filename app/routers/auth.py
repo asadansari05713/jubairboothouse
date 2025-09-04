@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Form, status
 from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session as DBSession
+from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from app.database import get_db
 from app.models import Admin, User, UserFavourite, Product, Session
@@ -36,19 +36,13 @@ def create_session(username, user_type="admin", user_id=None, db=None):
         user_type=user_type,
         user_id=user_id,
         expires_at=expiry,
-        is_active=True
+        is_active=1
     )
     
     if db:
-        try:
-            db.add(new_session)
-            db.commit()
-            db.refresh(new_session)
-        except Exception as e:
-            db.rollback()
-            print(f"Error creating session: {e}")
-            # Return session ID even if database save fails
-            # This ensures the app doesn't crash
+        db.add(new_session)
+        db.commit()
+        db.refresh(new_session)
     
     return session_id
 
@@ -64,55 +58,47 @@ def is_session_valid(session_data):
     # Check if session has expired
     return datetime.now() < session_data.expires_at
 
-def get_current_admin(request: Request, db: DBSession = None):
+def get_current_admin(request: Request, db: Session = None):
     session_id = request.cookies.get("session_id")
     if not session_id or not db:
         return None
     
-    try:
-        session_data = db.query(Session).filter(
-            Session.session_id == session_id,
-            Session.user_type == "admin",
-            Session.is_active == True
-        ).first()
-        
-        if not session_data or not is_session_valid(session_data):
-            # Mark session as inactive if expired
-            if session_data:
-                session_data.is_active = False
-                db.commit()
-            return None
-        
-        return session_data
-    except Exception as e:
-        print(f"Error checking admin session: {e}")
+    session_data = db.query(Session).filter(
+        Session.session_id == session_id,
+        Session.user_type == "admin",
+        Session.is_active == 1
+    ).first()
+    
+    if not session_data or not is_session_valid(session_data):
+        # Mark session as inactive if expired
+        if session_data:
+            session_data.is_active = 0
+            db.commit()
         return None
+    
+    return session_data
 
-def get_current_user(request: Request, db: DBSession = None):
+def get_current_user(request: Request, db: Session = None):
     session_id = request.cookies.get("user_session_id")
     if not session_id or not db:
         return None
     
-    try:
-        session_data = db.query(Session).filter(
-            Session.session_id == session_id,
-            Session.user_type == "user",
-            Session.is_active == True
-        ).first()
-        
-        if not session_data or not is_session_valid(session_data):
-            # Mark session as inactive if expired
-            if session_data:
-                session_data.is_active = False
-                db.commit()
-            return None
-        
-        return session_data
-    except Exception as e:
-        print(f"Error checking user session: {e}")
+    session_data = db.query(Session).filter(
+        Session.session_id == session_id,
+        Session.user_type == "user",
+        Session.is_active == 1
+    ).first()
+    
+    if not session_data or not is_session_valid(session_data):
+        # Mark session as inactive if expired
+        if session_data:
+            session_data.is_active = 0
+            db.commit()
         return None
+    
+    return session_data
 
-def get_current_session(request: Request, db: DBSession = None):
+def get_current_session(request: Request, db: Session = None):
     # Check for admin session first
     admin_session = get_current_admin(request, db)
     if admin_session:
@@ -133,7 +119,7 @@ def refresh_session(session_id, user_type="admin", db=None):
     session_data = db.query(Session).filter(
         Session.session_id == session_id,
         Session.user_type == user_type,
-        Session.is_active == True
+        Session.is_active == 1
     ).first()
     
     if session_data:
@@ -144,7 +130,7 @@ def refresh_session(session_id, user_type="admin", db=None):
     return None
 
 @router.get("/session/status")
-async def get_session_status(request: Request, db: DBSession = Depends(get_db)):
+async def get_session_status(request: Request, db: Session = Depends(get_db)):
     """Get current session status for client-side validation"""
     current_session = get_current_session(request, db)
     
@@ -183,7 +169,7 @@ async def get_session_status(request: Request, db: DBSession = Depends(get_db)):
     })
 
 @router.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request, db: DBSession = Depends(get_db)):
+async def login_page(request: Request, db: Session = Depends(get_db)):
     # Check if admin is already logged in
     current_session = get_current_admin(request, db)
     if current_session:
@@ -194,7 +180,7 @@ async def login_page(request: Request, db: DBSession = Depends(get_db)):
     return templates.TemplateResponse("admin_login.html", {"request": request})
 
 @router.get("/user/login", response_class=HTMLResponse)
-async def user_login_page(request: Request, db: DBSession = Depends(get_db)):
+async def user_login_page(request: Request, db: Session = Depends(get_db)):
     # Check if user is already logged in
     current_session = get_current_user(request, db)
     if current_session:
@@ -219,7 +205,7 @@ async def user_login(
     request: Request,
     email: str = Form(...),
     password: str = Form(...),
-    db: DBSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     # Validate user credentials against database
     user = db.query(User).filter(User.email == email).first()
@@ -258,7 +244,7 @@ async def user_signup(
     password: str = Form(...),
     confirm_password: str = Form(...),
     whatsapp: str = Form(None),
-    db: DBSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     # Validate passwords match
     if password != confirm_password:
@@ -311,7 +297,7 @@ async def login(
     request: Request,
     username: str = Form(...),
     password: str = Form(...),
-    db: DBSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     # Check if admin exists
     admin = db.query(Admin).filter(Admin.username == username).first()
@@ -339,7 +325,7 @@ async def login(
     return response
 
 @router.get("/logout")
-async def logout(request: Request, db: DBSession = Depends(get_db)):
+async def logout(request: Request, db: Session = Depends(get_db)):
     session_id = request.cookies.get("session_id")
     if session_id:
         # Mark session as inactive in database
@@ -348,7 +334,7 @@ async def logout(request: Request, db: DBSession = Depends(get_db)):
             Session.user_type == "admin"
         ).first()
         if session_data:
-            session_data.is_active = False
+            session_data.is_active = 0
             db.commit()
     
     response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
@@ -356,7 +342,7 @@ async def logout(request: Request, db: DBSession = Depends(get_db)):
     return response
 
 @router.get("/user/logout")
-async def user_logout(request: Request, db: DBSession = Depends(get_db)):
+async def user_logout(request: Request, db: Session = Depends(get_db)):
     session_id = request.cookies.get("user_session_id")
     if session_id:
         # Mark session as inactive in database
@@ -365,7 +351,7 @@ async def user_logout(request: Request, db: DBSession = Depends(get_db)):
             Session.user_type == "user"
         ).first()
         if session_data:
-            session_data.is_active = False
+            session_data.is_active = 0
             db.commit()
     
     response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
@@ -376,7 +362,7 @@ async def user_logout(request: Request, db: DBSession = Depends(get_db)):
 async def add_to_favourites(
     product_id: int,
     request: Request,
-    db: DBSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Add product to user's favourites"""
     current_session = get_current_user(request, db)
@@ -415,7 +401,7 @@ async def add_to_favourites(
 async def remove_from_favourites(
     product_id: int,
     request: Request,
-    db: DBSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Remove product from user's favourites"""
     current_session = get_current_user(request, db)
@@ -447,7 +433,7 @@ async def remove_from_favourites(
 async def check_favourite_status(
     product_id: int,
     request: Request,
-    db: DBSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Check if a product is favourited by the current user"""
     current_session = get_current_user(request, db)
@@ -467,7 +453,7 @@ async def check_favourite_status(
     return {"is_favourited": favourite is not None}
 
 @router.get("/user/profile", response_class=HTMLResponse)
-async def user_profile(request: Request, db: DBSession = Depends(get_db)):
+async def user_profile(request: Request, db: Session = Depends(get_db)):
     """User profile page with favourites"""
     current_session = get_current_user(request, db)
     if not current_session:
@@ -501,7 +487,7 @@ async def user_profile(request: Request, db: DBSession = Depends(get_db)):
     })
 
 @router.get("/user/favourites", response_class=HTMLResponse)
-async def user_favourites(request: Request, db: DBSession = Depends(get_db)):
+async def user_favourites(request: Request, db: Session = Depends(get_db)):
     """User favourites page"""
     current_session = get_current_user(request, db)
     if not current_session:
@@ -535,7 +521,7 @@ async def user_favourites(request: Request, db: DBSession = Depends(get_db)):
     })
 
 @router.get("/admin/users", response_class=HTMLResponse)
-async def admin_users(request: Request, db: DBSession = Depends(get_db)):
+async def admin_users(request: Request, db: Session = Depends(get_db)):
     """Admin users page - only accessible to admins"""
     current_session = get_current_admin(request, db)
     if not current_session:
@@ -558,7 +544,7 @@ async def update_user_profile(
     request: Request,
     name: str = Form(...),
     whatsapp: str = Form(None),
-    db: DBSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """Update user profile information"""
     current_session = get_current_user(request, db)
@@ -604,7 +590,7 @@ async def update_user_profile(
         )
 
 @router.get("/setup")
-async def setup_admin(db: DBSession = Depends(get_db)):
+async def setup_admin(db: Session = Depends(get_db)):
     """Setup initial admin user (run once)"""
     try:
         # Check if admin already exists

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}User Data - Admin Dashboard{% endblock %}
+{% block title %}User Management Hub - Admin Control Center{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -10,13 +10,13 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-1">
-                        <i class="fas fa-users me-2 text-primary"></i>User Data
+                        <i class="fas fa-users me-2 text-primary"></i>User Management Hub
                     </h2>
-                    <p class="text-muted mb-0">Manage and view user information</p>
+                    <p class="text-muted mb-0">Manage and view user information with advanced controls</p>
                 </div>
                 <div>
                     <a href="/products/admin/dashboard" class="btn btn-outline-primary me-2">
-                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        <i class="fas fa-tachometer-alt me-2"></i>Control Center
                     </a>
                     <a href="/products/" class="btn btn-primary">
                         <i class="fas fa-shopping-bag me-2"></i>View Products
@@ -27,7 +27,7 @@
     </div>
 
     <!-- Search Bar -->
-    <div class="row mb-4">
+    <div class="row mb-3">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
@@ -51,99 +51,59 @@
         </div>
     </div>
 
-    <!-- Users Count -->
-    <div class="row mb-4">
+    <!-- Users Count (moved below search) -->
+    {% if users %}
+    <div class="row mb-3">
         <div class="col-12">
-            <div class="alert alert-info d-flex align-items-center">
+            <div class="alert alert-info d-flex align-items-center py-2">
                 <i class="fas fa-info-circle me-2"></i>
-                <span>Showing <strong id="userCount">{{ users|length }}</strong> user{{ 's' if users|length != 1 else '' }}</span>
+                <span class="small mb-0">Showing <strong id="userCount">{{ users|length }}</strong> user{{ 's' if users|length != 1 else '' }}</span>
             </div>
         </div>
     </div>
+    {% endif %}
 
-    <!-- Users Table -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-table me-2"></i>User Information
-                    </h5>
-                </div>
-                <div class="card-body">
-                    {% if users %}
-                        <div class="table-responsive">
-                            <table class="table table-hover" id="usersTable">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th scope="col">
-                                            <i class="fas fa-user me-2"></i>Name
-                                        </th>
-                                        <th scope="col">
-                                            <i class="fas fa-envelope me-2"></i>Email
-                                        </th>
-                                        <th scope="col">
-                                            <i class="fab fa-whatsapp me-2"></i>WhatsApp
-                                        </th>
-                                        <th scope="col">
-                                            <i class="fas fa-calendar me-2"></i>Created At
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for user in users %}
-                                    <tr class="user-row" data-name="{{ user.name|lower }}" data-email="{{ user.email|lower }}">
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="user-avatar me-3">
-                                                    <i class="fas fa-user-circle fa-2x text-primary"></i>
-                                                </div>
-                                                <div>
-                                                    <strong>{{ user.name }}</strong>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <a href="mailto:{{ user.email }}" class="text-decoration-none">
-                                                {{ user.email }}
-                                            </a>
-                                        </td>
-                                        <td>
-                                            {% if user.whatsapp %}
-                                                <a href="https://wa.me/{{ user.whatsapp }}" target="_blank" class="text-decoration-none">
-                                                    <i class="fab fa-whatsapp me-2 text-success"></i>{{ user.whatsapp }}
-                                                </a>
-                                            {% else %}
-                                                <span class="text-muted">Not provided</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <span class="text-muted">{{ user.created_at or 'Recently' }}</span>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <!-- Empty State -->
-                        <div class="text-center py-5">
-                            <div class="empty-users">
-                                <i class="fas fa-users fa-4x text-muted mb-3"></i>
-                                <h4 class="text-muted">No Users Found</h4>
-                                <p class="text-muted mb-4">There are no users registered in the system yet.</p>
-                            </div>
-                        </div>
-                    {% endif %}
+    <!-- Users Catalog Grid (Admin) below search -->
+    {% if users %}
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h4 class="mb-2 text-primary"><i class="fas fa-users me-2"></i>User Catalog</h4>
+            <div class="title-underline mx-auto" style="width: 64px;height:4px;background:linear-gradient(90deg, var(--primary-blue), var(--success-green));border-radius:2px;"></div>
+        </div>
+    </div>
+    <div class="row g-3" id="usersCatalog">
+        {% for user in users %}
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card user-card hover-lift h-100" 
+                 onclick="showUserDetailModal(this)"
+                 data-name="{{ user.name }}"
+                 data-email="{{ user.email }}"
+                 data-whatsapp="{{ user.whatsapp or '' }}"
+                 data-created="{{ user.created_at or '' }}"
+                 style="cursor:pointer;">
+                <div class="card-body d-flex align-items-center">
+                    <div class="me-3 text-primary" style="font-size:2rem;"><i class="fas fa-user-circle"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold mb-1">{{ user.name }}</div>
+                        <div class="text-muted small">{{ user.email }}</div>
+                    </div>
                 </div>
             </div>
         </div>
+        {% endfor %}
     </div>
+    {% endif %}
+
+    
+
+    <!-- Users Table removed per request; using catalog grid above -->
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
+.user-card{border:1px solid var(--border-light);border-radius:12px;transition:.3s;background:#fff}
+.user-card:hover{transform:translateY(-6px);box-shadow:0 10px 25px rgba(0,0,0,.08);border-color:var(--primary-blue)}
 .user-avatar {
     width: 40px;
     height: 40px;
@@ -204,6 +164,51 @@
 
 {% block extra_js %}
 <script>
+function showUserDetailModal(card){
+    const name = card.getAttribute('data-name')||'';
+    const email = card.getAttribute('data-email')||'';
+    const whatsapp = card.getAttribute('data-whatsapp')||'';
+    const created = card.getAttribute('data-created')||'';
+    const content = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6><i class="fas fa-user me-2 text-primary"></i>Name</h6>
+                <p class="mb-3">${name}</p>
+                <h6><i class="fas fa-envelope me-2 text-primary"></i>Email</h6>
+                <p class="mb-3">${email}</p>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="fab fa-whatsapp me-2 text-success"></i>WhatsApp</h6>
+                <p class="mb-3">${whatsapp || 'N/A'}</p>
+                <h6><i class="fas fa-calendar me-2 text-primary"></i>Created</h6>
+                <p class="mb-3">${created || 'Recently'}</p>
+            </div>
+        </div>`;
+    ensureUserModal();
+    document.getElementById('userDetailContent').innerHTML = content;
+    const modal = new bootstrap.Modal(document.getElementById('userDetailModal'));
+    modal.show();
+}
+
+function ensureUserModal(){
+    if(document.getElementById('userDetailModal')) return;
+    const modalHtml = `
+    <div class="modal fade" id="userDetailModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title"><i class="fas fa-user me-2"></i>User Details</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body" id="userDetailContent"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     const userRows = document.querySelectorAll('.user-row');

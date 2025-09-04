@@ -38,6 +38,13 @@
     .main-content {
         margin-top: 140px !important; /* Account for fixed navbar + mobile navbar (reduced height) */
     }
+    
+    /* Hero section should touch navbar on mobile */
+    .hero-section {
+        margin-top: -140px !important; /* Pull up to touch mobile navbar */
+        padding-top: 140px !important; /* Add padding so content doesn't hide behind navbar */
+        z-index: 1; /* Below navbar */
+    }
 }
 
 .mobile-nav-links {

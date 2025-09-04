@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Product Catalog - Jubair Boot House{% endblock %}
+{% block title %}Product Catalog - Jubair Boot House Elite Collection{% endblock %}
 
 {% block content %}
-<div class="container mt-5 pt-5">
-    <!-- Enhanced Page Header -->
-    <div class="row mb-5">
+<div class="container">
+    <!-- Enhanced Page Header (aligned near top like Admin Control Center) -->
+    <div class="row mb-4">
         <div class="col-12 text-center">
-            <h1 class="display-4 fw-bold text-primary mb-3">Product Catalog</h1>
+            <h2 class="display-5 fw-bold text-primary mb-3">Product Catalog</h2>
             <p class="lead text-muted">Discover our amazing collection of footwear</p>
             <div class="title-underline mx-auto"></div>
         </div>
@@ -28,12 +28,13 @@
         </div>
     </div>
 
+
     <!-- Enhanced Products Grid -->
     {% if products %}
     <div class="row g-4">
         {% for product in products %}
-        <div class="col-md-6 col-lg-4 col-xl-3">
-            <div class="product-card hover-lift" onclick="window.location.href='/products/detail/{{ product.id }}'" style="cursor: pointer;">
+        <div class="col-6 col-md-3 col-lg-3 col-xl-3">
+            <div class="product-card hover-lift" onclick="window.location.href='/products/{{ product.id }}'" style="cursor: pointer;">
                 <div class="product-image-container">
                     {% if product.image_url %}
                         <!-- Show URL image if available -->
@@ -62,9 +63,24 @@
                 </div>
                 
                 <div class="product-details">
-                    <h5 class="product-title">{{ product.name }}</h5>
+                    <h5 class="product-title d-flex align-items-center justify-content-between">
+                        <span>{{ product.name }}</span>
+                        {% set card_gender = '' %}
+                        {% if product.description %}
+                            {% if 'Gender: Male' in product.description %}
+                                {% set card_gender = 'Male' %}
+                            {% elif 'Gender: Female' in product.description %}
+                                {% set card_gender = 'Female' %}
+                            {% endif %}
+                        {% endif %}
+                        {% if card_gender %}
+                        <span class="badge {% if card_gender == 'Male' %}bg-info{% else %}bg-danger{% endif %}"><i class="fas fa-{% if card_gender == 'Male' %}mars{% else %}venus{% endif %} me-1"></i>{{ card_gender }}</span>
+                        {% endif %}
+                    </h5>
+                    {% set raw_desc = product.description or '' %}
+                    {% set clean_desc = raw_desc.replace('Gender: Male','').replace('Gender: Female','').strip() %}
                     <p class="product-description text-muted small">
-                        {{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}
+                        {{ clean_desc[:100] }}{% if clean_desc|length > 100 %}...{% endif %}
                     </p>
                     
                     <div class="product-meta">
@@ -96,7 +112,7 @@
                         <div class="product-price">₹{{ "%.2f"|format(product.price) }}</div>
                         <div class="product-actions">
                             {% if product.status == "Available" %}
-                            <button class="btn btn-outline-primary btn-sm px-3" onclick="event.stopPropagation(); addToWishlist({{ product.id }})">
+                            <button class="btn btn-outline-primary btn-sm px-3 catalog-fav-btn" onclick="event.stopPropagation(); addToWishlist({{ product.id }})">
                                 <i class="fas fa-heart me-1"></i>Add to Favourites
                             </button>
                             {% else %}
@@ -135,6 +151,23 @@
 
 {% block extra_css %}
 <style>
+/* CSS Variables for consistency */
+:root {
+    --primary-blue: #2563eb;
+    --primary-dark: #1d4ed8;
+    --success-green: #10b981;
+    --danger-red: #ef4444;
+    --warning-amber: #f59e0b;
+    --info-blue: #06b6d4;
+    --text-muted: #6b7280;
+    --border-light: #e5e7eb;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
 .product-card {
     transition: all 0.3s ease;
     border: 1px solid #e9ecef;
@@ -229,13 +262,89 @@
         font-size: 1.2rem;
     }
     
-
+    /* Reduce space between catalog title and mobile search bar */
+    .container.mt-5.pt-5 .row.mb-5 {
+        margin-bottom: 0.5rem !important; /* Reduce from 3rem to 0.5rem on mobile */
+    }
+    
+    /* Also reduce the top margin of the container on mobile */
+    .container.mt-5.pt-5 {
+        margin-top: 1rem !important; /* Reduce from 3rem to 1rem on mobile */
+        padding-top: 1rem !important; /* Reduce from 3rem to 1rem on mobile */
+    }
+    
+    /* Add proper spacing between mobile search box and catalog content */
+    .main-content .container.mt-5.pt-5 {
+        margin-top: 2rem !important; /* Add space below mobile search bar */
+        padding-top: 1rem !important;
+    }
+    
+    /* Ensure the catalog title has proper spacing from mobile search */
+    .main-content .container.mt-5.pt-5 .row.mb-5 {
+        margin-top: 1rem !important; /* Add space above title */
+        margin-bottom: 1.5rem !important; /* Add space below title */
+    }
+    
+    /* Mobile product card adjustments for 2-per-row layout */
+    .product-card {
+        margin-bottom: 0.5rem;
+    }
+    
+    .product-image-container {
+        height: 150px; /* Smaller image height on mobile */
+    }
+    
+    .product-details {
+        padding: 0.75rem; /* Reduced padding */
+    }
+    
+    .product-title {
+        font-size: 1rem; /* Smaller title */
+        margin-bottom: 0.5rem;
+    }
+    
+    .product-description {
+        font-size: 0.8rem; /* Smaller description */
+        margin-bottom: 0.75rem;
+    }
+    
+    .product-price {
+        font-size: 1.1rem; /* Smaller price */
+    }
+    
+    .product-actions .btn {
+        font-size: 0.75rem; /* Smaller button text */
+        padding: 0.3rem 0.6rem;
+    }
+    
+    .product-meta .badge {
+        font-size: 0.65rem; /* Smaller badges */
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .product-meta small {
+        font-size: 0.65rem; /* Smaller meta text */
+    }
+    
+    .product-meta .fw-bold {
+        font-size: 0.75rem; /* Smaller category text */
+    }
 }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+// Quick keyword pill support
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.keyword-pill').forEach(btn => {
+    btn.addEventListener('click', function(){
+      const k = this.getAttribute('data-k') || '';
+      const input = document.querySelector('input[name="search"]');
+      if (input){ input.value = k; }
+    });
+  });
+});
 async function addToWishlist(productId) {
     const btn = event.target;
     const originalText = btn.innerHTML;

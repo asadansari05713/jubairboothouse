@@ -13,6 +13,8 @@
         align-items: center;
         justify-content: center;
         padding: 2rem 1rem;
+        margin-top: 0;
+        padding-top: 2rem;
     }
     
     .user-auth-container::before {
@@ -372,6 +374,16 @@
             <!-- Signup Form -->
             <div class="form-section {% if showSignup %}active{% endif %}" id="signupForm">
                 <form method="POST" action="/auth/user/signup">
+                    <div class="mb-3">
+                        <label for="signupName" class="form-label">
+                            <i class="fas fa-user me-2 text-warning"></i>Full Name
+                        </label>
+                        <input type="text" class="form-control form-control-lg" id="signupName" 
+                               name="name" required autocomplete="name" 
+                               placeholder="Enter your full name"
+                               value="{{ prefill_name or '' }}">
+                    </div>
+                    
                     <div class="mb-3">
                         <label for="signupEmail" class="form-label">
                             <i class="fas fa-envelope me-2 text-warning"></i>Email Address

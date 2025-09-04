@@ -65,12 +65,12 @@
                     </div>
                 </div>
 
-                <!-- Feedback Table -->
+                <!-- Feedback Catalog Grid -->
                 <div class="card shadow-sm">
                     <div class="card-header bg-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">
-                                <i class="fas fa-list me-2 text-primary"></i>All Feedback
+                                <i class="fas fa-th-large me-2 text-primary"></i>Feedback Catalog
                             </h5>
                             <div class="d-flex gap-2">
                                 <button class="btn btn-outline-secondary btn-sm" onclick="exportFeedback()">
@@ -82,93 +82,32 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-body p-0">
+                    <div class="card-body">
                         {% if feedback_list %}
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="border-0">
-                                            <i class="fas fa-user me-2 text-primary"></i>Name
-                                        </th>
-                                        <th class="border-0">
-                                            <i class="fas fa-envelope me-2 text-primary"></i>Email
-                                        </th>
-                                        <th class="border-0">
-                                            <i class="fas fa-comment me-2 text-primary"></i>Message
-                                        </th>
-                                        <th class="border-0">
-                                            <i class="fas fa-calendar me-2 text-primary"></i>Date
-                                        </th>
-                                        <th class="border-0 action-column">
-                                            <i class="fas fa-cogs me-2 text-primary"></i>Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for feedback in feedback_list %}
-                                    <tr data-feedback-id="{{ feedback.id }}">
-                                        <td class="align-middle">
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar-sm me-3">
-                                                    <i class="fas fa-user-circle fa-2x text-primary"></i>
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-0 fw-semibold">{{ feedback.name }}</h6>
-                                                    <small class="text-muted">ID: {{ feedback.id }}</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="align-middle">
-                                            <a href="mailto:{{ feedback.email }}" class="text-decoration-none">
-                                                <i class="fas fa-envelope me-2 text-muted"></i>{{ feedback.email }}
-                                            </a>
-                                        </td>
-                                        <td class="align-middle">
-                                            <div class="message-preview">
-                                                <p class="mb-1 fw-medium">{{ feedback.message[:100] }}{% if feedback.message|length > 100 %}...{% endif %}</p>
-                                                {% if feedback.message|length > 100 %}
-                                                <button class="btn btn-link btn-sm p-0" onclick="showFullMessage({{ feedback.id }})">
-                                                    Read More
-                                                </button>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                        <td class="align-middle">
-                                            <div class="text-center">
-                                                <div class="fw-semibold">
-                                                    {% if feedback.created_at %}
-                                                        {{ feedback.created_at.strftime('%b %d, %Y') }}
-                                                    {% else %}
-                                                        N/A
-                                                    {% endif %}
-                                                </div>
-                                                <small class="text-muted">
-                                                    {% if feedback.created_at %}
-                                                        {{ feedback.created_at.strftime('%I:%M %p') }}
-                                                    {% else %}
-                                                        N/A
-                                                    {% endif %}
-                                                </small>
-                                            </div>
-                                        </td>
-                                        <td class="align-middle">
-                                            <div class="action-buttons">
-                                                <button class="action-btn action-btn-view" onclick="viewFeedback({{ feedback.id }})" title="View Details">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                                <button class="action-btn action-btn-reply" onclick="replyToFeedback({{ feedback.id }}, '{{ feedback.email }}')" title="Reply">
-                                                    <i class="fas fa-reply"></i>
-                                                </button>
-                                                <button class="action-btn action-btn-delete" onclick="deleteFeedback({{ feedback.id }})" title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                        <div class="row g-3">
+                            {% for feedback in feedback_list %}
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <div class="feedback-card h-100" onclick="viewFeedback({{ feedback.id }})" style="cursor:pointer;">
+                                    <div class="feedback-card-header">
+                                        <span class="badge bg-primary"><i class="fas fa-user me-1"></i>{{ feedback.name }}</span>
+                                        <span class="badge bg-secondary">#{{ feedback.id }}</span>
+                                    </div>
+                                    <div class="feedback-card-body">
+                                        <div class="feedback-message text-muted small">{{ feedback.message[:100] }}{% if feedback.message|length > 100 %}...{% endif %}</div>
+                                    </div>
+                                    <div class="feedback-card-footer d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">{{ feedback.email }}</small>
+                                        <small class="text-muted">
+                                            {% if feedback.created_at %}
+                                                {{ feedback.created_at.strftime('%b %d') }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
                         {% else %}
                         <div class="text-center py-5">
